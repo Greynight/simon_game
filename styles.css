@@ -1,0 +1,101 @@
+body {
+  background-color: #333333;
+}
+
+#circle {
+  background-color: #333333;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  position: relative;
+  left: calc(50% - 210px);
+  border: 10px solid white;
+  overflow: hidden;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+#inner-circle {
+  background-color: #333333;
+  width: 200px;
+  height: 200px;
+  position: absolute;
+  left: 100px;
+  top: 100px;
+  border-radius: 50%;
+  border: 10px solid white;
+  overflow: hidden;
+  padding-top: 20px;
+}
+
+#red {
+  cursor: pointer;
+  background-color: red;
+  width: 50%;
+  height: 50%;
+  border-style: solid;
+  border-color: white;
+  border-width: 0 5px 5px 0;
+}
+
+#red.light {
+  background-color : #ff4c4c;
+}
+
+#green {
+  cursor: pointer;
+  background-color: green;
+  width: 50%;
+  height: 50%;
+  border-style: solid;
+  border-color: white;
+  border-width: 0 0 5px 5px;
+}
+
+#green.light {
+  background-color : #13ff7c;
+}
+
+#yellow {
+  cursor: pointer;
+  background-color: yellow;
+  width: 50%;
+  height: 50%;
+  border-style: solid;
+  border-color: white;
+  border-width: 5px 5px 0 0;
+}
+
+#yellow.light {
+  background-color : #fed93f;
+}
+
+#blue {
+  cursor: pointer;
+  background-color: blue;
+  width: 50%;
+  height: 50%;
+  border-style: solid;
+  border-color: white;
+  border-width: 5px 0 0 5px;
+}
+
+#blue.light {
+  background-color : #1c8cff;
+}
+
+.text-white {
+  color: white;
+}
+
+.button-round {
+  width: 15px;
+  height: 15px;
+  border-style: solid;
+  border-color: black;
+  border-width: 1px;
+  border-radius: 50%;
+  display: inline-flex;
+  margin: 5px;
+  color: white
+}
