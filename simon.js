@@ -6,15 +6,31 @@ const Button = (props) => {
   );
 };
 
+const GameOnOff = (props) => {
+  const onClass = props.state ? "btn btn-success btn-sm disabled" : "btn btn-success btn-sm";
+  const offClass = props.state ? "btn btn-danger btn-sm" : "btn btn-danger btn-sm disabled";
+
+  return (
+    <div className="btn-group" role="group">
+      <button type="button" className={ onClass }>ON</button>
+      <button type="button" className={ offClass }>OFF</button>
+    </div>
+  );
+};
+
 class SimonGame extends React.Component {
   constructor(props) {
     super(props);
+
+    this.sectors = ['blue', 'yellow', 'green', 'red'];
 
     this.state = {
       on: false,
       strict: false,
       started: false,
       count: 0,
+      sequence: [],
+      userSequence: [],
       highlighted: false
     };
 
@@ -98,16 +114,93 @@ class SimonGame extends React.Component {
     }
   };
 
+  generateStep = () => {
+    const sectorIndex = Math.round(Math.random() * 3);
+    return this.sectors[sectorIndex];
+  };
+
+  addStepToSequence = () => {
+    this.setState({
+      sequence: this.state.sequence.push(this.generateStep())
+    });
+  };
+  
+  playOneStep = (sector) => {
+    this.audio.playGoodTone(sector);
+    this.setState(
+      highlighted: sector
+    );
+    
+    setTimeout(() => {
+      this.audio.stopGoodTones(sector);
+      this.setState(
+        highlighted: false
+      );
+    }, 3000);
+  };
+  
+  playSequence = () => {
+    for (let sector of this.state.sequence) {
+      this.playOneStep(sector);
+    }
+  };
+
+  checkStep = (sector) => {
+    this.state.userSequence.push(sector);
+    return this.state.sequence[this.state.userSequence.length - 1] === sector;
+  };
+
   handleSectorClickStart = (e) =>  {
     const sector = e.target.id;
 
-    this.audio.playGoodTone(sector);
+    if (this.checkStep(sector)) {
+      this.audio.playGoodTone(sector);
+    } else {
+      this.audio.playErrTone();
+    }
   };
 
   handleSectorClickStop = (e) => {
     const sector = e.target.id;
 
-    this.audio.stopGoodTones(sector);
+    if (this.checkStep(sector)) {
+      // TODO all steps in current sequence were completed successfully
+      // TODO if sequence length === 20, then the WIN
+      this.audio.stopGoodTones(sector);
+
+      if (this.state.sequence.length === this.state.userSequence.length) {
+        this.state.userSequence.length = 0;
+        this.addStepToSequence();
+        this.playSequence();
+      }
+    } else {
+      this.audio.stopErrTone();
+      this.state.userSequence.length = 0;
+      this.playSequence();
+      // TODO stop playing sequence
+      // TODO if not strict, then play from the beginning
+    }
+  };
+
+  handleGameStart = () => {
+    this.setState({
+      started: !this.state.started
+    });
+
+    this.addStepToSequence();
+    this.playSequence();
+  };
+
+  handleStrictChange = () => {
+    this.setState({
+      strict: !this.state.strict
+    });
+  };
+
+  handleGameOn = () => {
+    this.setState({
+      on: !this.state.on
+    });
   };
 
   render() {
@@ -118,14 +211,49 @@ class SimonGame extends React.Component {
           <div className="col-4"></div>
           <div className="col-4 text-center">
             <div id="circle">
-              <div id="red" onMouseDown={this.handleSectorClickStart} onMouseUp={this.handleSectorClickStop}></div>
-              <div id="green" onMouseDown={this.handleSectorClickStart} onMouseUp={this.handleSectorClickStop}></div>
-              <div id="yellow" onMouseDown={this.handleSectorClickStart} onMouseUp={this.handleSectorClickStop}></div>
-              <div id="blue" onMouseDown={this.handleSectorClickStart} onMouseUp={this.handleSectorClickStop}></div>
+              <div 
+                id="red" 
+                className={this.state.highlighted === 'red' ? 'light' : ''} 
+                onMouseDown={this.handleSectorClickStart} 
+                onMouseUp={this.handleSectorClickStop}>
+              </div>
+              <div 
+                id="green"
+                className={this.state.highlighted === 'green' ? 'light' : ''}
+                onMouseDown={this.handleSectorClickStart} 
+                onMouseUp={this.handleSectorClickStop}>
+              </div>
+              <div 
+                id="yellow"
+                className={this.state.highlighted === 'yellow' ? 'light' : ''}
+                onMouseDown={this.handleSectorClickStart} 
+                onMouseUp={this.handleSectorClickStop}>
+              </div>
+              <div
+                id="blue"
+                onMouseDown={this.handleSectorClickStart}
+                onMouseUp={this.handleSectorClickStop}>
+                className={this.state.highlighted === 'blue' ? 'light' : ''}
+              </div>
               <div id="inner-circle" className="text-center">
-                <Button state={this.state.started} /><a href="#">Start</a><br />
-                <a href="#">Strict</a><br />
-                <a href="#">On</a>
+                <Button state={this.state.started} />
+                <span onClick={this.handleGameStart}>
+                  {this.state.started ? <a href="#">Stop</a> : <a href="#">Start</a>}
+                </span>
+                <br />
+                <Button state={this.state.strict} />
+                <span onClick={this.handleStrictChange}>
+                  {this.state.strict ? <a href="#">Strict OFF</a> : <a href="#">Strict ON</a>}
+                </span>
+                <br />
+                <span onClick={this.handleGameOn}>
+                  <GameOnOff state={ this.state.on } />
+                </span>
+                <br />
+                <br />
+                <div id="counter">
+                  { this.state.on ? this.state.count : '' }
+                </div>
               </div>
             </div>
           </div>
