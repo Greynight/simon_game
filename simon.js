@@ -256,6 +256,10 @@ class SimonGame extends React.Component {
     } else {
       this.userSequence.length = 0;
       this.sequence.length = 0;
+
+      this.setState({
+        count: 0
+      });
     }
   };
 
@@ -267,7 +271,8 @@ class SimonGame extends React.Component {
 
   handleGameOn = () => {
     this.setState({
-      on: !this.state.on
+      on: !this.state.on,
+      count: 0
     });
   };
 
@@ -304,22 +309,22 @@ class SimonGame extends React.Component {
                 onMouseUp={this.handleSectorClickStop}>
               </div>
               <div id="inner-circle" className="text-center">
-                <Button state={this.state.started} />
-                <span onClick={this.handleGameStart}>
-                  {this.state.started ? <a href="#">Stop</a> : <a href="#">Start</a>}
-                </span>
-                <br />
-                <Button state={this.state.strict} />
-                <span onClick={this.handleStrictChange}>
-                  {this.state.strict ? <a href="#">Strict OFF</a> : <a href="#">Strict ON</a>}
-                </span>
-                <br />
-                <span onClick={this.handleGameOn}>
+                <div className="inner-elements">
+                  <Button state={this.state.started} />
+                  <span onClick={this.handleGameStart}>
+                    {this.state.started ? <a href="#">Stop</a> : <a href="#">Start</a>}
+                  </span>
+                </div>
+                <div className="inner-elements">
+                  <Button state={this.state.strict} />
+                  <span onClick={this.handleStrictChange}>
+                    {this.state.strict ? <a href="#">Strict OFF</a> : <a href="#">Strict ON</a>}
+                  </span>
+                </div>
+                <div className="inner-elements" onClick={this.handleGameOn}>
                   <GameOnOff state={ this.state.on } />
-                </span>
-                <br />
-                <br />
-                <div id="counter">
+                </div>
+                <div className="inner-elements" id="counter">
                   { this.state.on ? this.state.count : '' }
                 </div>
               </div>

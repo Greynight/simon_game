@@ -25,7 +25,10 @@ body {
   border-radius: 50%;
   border: 10px solid white;
   overflow: hidden;
-  padding-top: 20px;
+  padding-top: 10px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
 }
 
 #red {
@@ -102,4 +105,21 @@ body {
   display: inline-flex;
   margin: 5px;
   color: white
+}
+
+#counter {
+  width: 80px;
+  height: 40px;
+  background-color: black;
+  color: red;
+  font-size: 24px;
+  margin-top: 20px;
+  border-radius: 30%;
+  justify-content: center;
+}
+
+.inner-elements {
+  display: flex;
+  align-items: center;
+  margin-top: 5px;
 }
