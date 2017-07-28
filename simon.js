@@ -23,14 +23,15 @@ class SimonGame extends React.Component {
     super(props);
 
     this.sectors = ['blue', 'yellow', 'green', 'red'];
+    this.sequence = [];
+    this.userSequence = [];
+    this.isPlaying = false;
 
     this.state = {
       on: false,
       strict: false,
       started: false,
       count: 0,
-      sequence: [],
-      userSequence: [],
       highlighted: false
     };
 
@@ -114,44 +115,73 @@ class SimonGame extends React.Component {
     }
   };
 
+  updateCounter = () => {
+    this.setState({
+      count: this.sequence.length
+    });
+  };
+
   generateStep = () => {
     const sectorIndex = Math.round(Math.random() * 3);
     return this.sectors[sectorIndex];
   };
 
   addStepToSequence = () => {
-    this.setState({
-      sequence: this.state.sequence.push(this.generateStep())
-    });
+    this.sequence.push(this.generateStep());
+    this.updateCounter();
   };
-  
+
   playOneStep = (sector) => {
     this.audio.playGoodTone(sector);
-    this.setState(
+    this.setState({
       highlighted: sector
-    );
-    
+    });
+
     setTimeout(() => {
       this.audio.stopGoodTones(sector);
-      this.setState(
+      this.setState({
         highlighted: false
-      );
-    }, 3000);
+      });
+    }, 1000);
   };
-  
+
   playSequence = () => {
-    for (let sector of this.state.sequence) {
-      this.playOneStep(sector);
+    let delay = 0;
+    this.isPlaying = true;
+
+    for (let sector of this.sequence) {
+      setTimeout(() => {
+        this.playOneStep(sector);
+      }, delay);
+
+      delay += 1500;
     }
+
+    delay -= 1000;
+
+    setTimeout(() => {
+      this.isPlaying = false;
+    }, delay);
   };
 
   checkStep = (sector) => {
-    this.state.userSequence.push(sector);
-    return this.state.sequence[this.state.userSequence.length - 1] === sector;
+    console.log(this.sequence, this.userSequence);
+    return this.sequence[this.userSequence.length - 1] === sector;
   };
 
   handleSectorClickStart = (e) =>  {
+    if (this.isPlaying || !this.state.on || !this.state.started) {
+      return false;
+    }
+
     const sector = e.target.id;
+    const userSequence = this.userSequence;
+
+    userSequence.push(sector);
+
+    this.setState({
+      highlighted: sector
+    });
 
     if (this.checkStep(sector)) {
       this.audio.playGoodTone(sector);
@@ -161,34 +191,72 @@ class SimonGame extends React.Component {
   };
 
   handleSectorClickStop = (e) => {
+    if (this.isPlaying || !this.state.on || !this.state.started) {
+      return false;
+    }
+
     const sector = e.target.id;
 
     if (this.checkStep(sector)) {
-      // TODO all steps in current sequence were completed successfully
-      // TODO if sequence length === 20, then the WIN
       this.audio.stopGoodTones(sector);
 
-      if (this.state.sequence.length === this.state.userSequence.length) {
-        this.state.userSequence.length = 0;
+      this.setState({
+        highlighted: false
+      });
+
+      if (this.sequence.length === this.userSequence.length) {
+        if (this.userSequence.length === 20) {
+          alert('You are the champion!');
+
+          this.setState({
+            started: false,
+            on: false
+          });
+
+          return false;
+        }
+
         this.addStepToSequence();
-        this.playSequence();
+        this.userSequence.length = 0;
+
+        setTimeout(() => {
+          this.playSequence();
+        }, 2000);
       }
     } else {
       this.audio.stopErrTone();
-      this.state.userSequence.length = 0;
-      this.playSequence();
-      // TODO stop playing sequence
-      // TODO if not strict, then play from the beginning
+
+      this.setState({
+        highlighted: false
+      });
+
+      if (this.state.strict) {
+        this.userSequence.length = 0;
+        this.sequence.length = 0;
+        alert('Looser! Play from the beginning!');
+        this.addStepToSequence();
+        this.playSequence();
+      } else {
+        this.userSequence.length = 0;
+        this.playSequence();
+      }
     }
   };
 
   handleGameStart = () => {
+    const wasStarted = this.state.started;
+
     this.setState({
       started: !this.state.started
     });
 
-    this.addStepToSequence();
-    this.playSequence();
+    if (!wasStarted) {
+      this.addStepToSequence();
+      this.playSequence();
+    } else {
+      this.userSequence.length = 0;
+      this.sequence.length = 0;
+    }
   };
 
   handleStrictChange = () => {
@@ -211,29 +279,29 @@ class SimonGame extends React.Component {
           <div className="col-4"></div>
           <div className="col-4 text-center">
             <div id="circle">
-              <div 
-                id="red" 
-                className={this.state.highlighted === 'red' ? 'light' : ''} 
-                onMouseDown={this.handleSectorClickStart} 
+              <div
+                id="red"
+                className={this.state.highlighted === 'red' ? 'light' : ''}
+                onMouseDown={this.handleSectorClickStart}
                 onMouseUp={this.handleSectorClickStop}>
               </div>
-              <div 
+              <div
                 id="green"
                 className={this.state.highlighted === 'green' ? 'light' : ''}
-                onMouseDown={this.handleSectorClickStart} 
+                onMouseDown={this.handleSectorClickStart}
                 onMouseUp={this.handleSectorClickStop}>
               </div>
-              <div 
+              <div
                 id="yellow"
                 className={this.state.highlighted === 'yellow' ? 'light' : ''}
-                onMouseDown={this.handleSectorClickStart} 
+                onMouseDown={this.handleSectorClickStart}
                 onMouseUp={this.handleSectorClickStop}>
               </div>
               <div
                 id="blue"
+                className={this.state.highlighted === 'blue' ? 'light' : ''}
                 onMouseDown={this.handleSectorClickStart}
                 onMouseUp={this.handleSectorClickStop}>
-                className={this.state.highlighted === 'blue' ? 'light' : ''}
               </div>
               <div id="inner-circle" className="text-center">
                 <Button state={this.state.started} />
